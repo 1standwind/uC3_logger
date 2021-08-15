@@ -1,0 +1,257 @@
+;****************************************************************************
+;* Exception Handler                                                        *
+;*                                                                          *
+;*  File name : excp.src                                                    *
+;****************************************************************************
+
+;* Section definition
+
+        .section    PIntPRG,CODE,ALIGN=8
+
+;* Definition of Standard function
+
+        .glb     __kernel_systbl
+        .glb     __kernel_entint
+        .glb     __kernel_retint
+        .glb     _int_abort
+
+;* Definition of ISR and Extention info
+
+        .glb     __ddr_rx_cmt0_isr
+        .glb     __ddr_rx_eth_intr
+        .glb     _rtc1s_isr
+        .glb     _rtc1d_isr
+        .glb     __ddr_rx_sci0_mng0
+        .glb     __ddr_rx_sci0_eri
+        .glb     __ddr_rx_sci0_mng0
+        .glb     __ddr_rx_sci0_rxi
+        .glb     __ddr_rx_sci0_mng0
+        .glb     __ddr_rx_sci0_txi
+        .glb     __ddr_rx_sci0_mng0
+        .glb     __ddr_rx_sci0_tei
+
+;* Definition of Const
+
+
+;* Exception handler
+
+        .align  8
+        .glb    default_exception
+default_exception:
+        pushm   r1-r5
+        pushm   r14-r15
+        mvfacmi r3
+        shll    #16,r3
+        mvfachi r4
+        pushm   r3-r4
+        mov.l   #_int_abort,r14
+        mov.l   sp,r1
+        jsr     r14
+        popm    r3-r4
+        mvtaclo r3
+        mvtachi r4
+        popm    r14-r15
+        popm    r1-r5
+        rte
+
+
+;* Non Kernel Interrupt handler
+
+
+;* Interrupt handler
+
+        .align  8
+        .glb    inthdr_28
+inthdr_28:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #28,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #0,r1                      ; set exinf parameter
+        bsr     __ddr_rx_cmt0_isr
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #28,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #__ddr_rx_cmt0_isr,r5
+        mov.l   #0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_32
+inthdr_32:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #32,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #0,r1                      ; set exinf parameter
+        bsr     __ddr_rx_eth_intr
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #32,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #__ddr_rx_eth_intr,r5
+        mov.l   #0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_62
+inthdr_62:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #62,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #0,r1                      ; set exinf parameter
+        bsr     _rtc1s_isr
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #62,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #_rtc1s_isr,r5
+        mov.l   #0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_92
+inthdr_92:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #92,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #0,r1                      ; set exinf parameter
+        bsr     _rtc1d_isr
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #92,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #_rtc1d_isr,r5
+        mov.l   #0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_214
+inthdr_214:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #214,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        bsr     __ddr_rx_sci0_eri
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #214,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #__ddr_rx_sci0_eri,r5
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_215
+inthdr_215:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #215,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        bsr     __ddr_rx_sci0_rxi
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #215,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #__ddr_rx_sci0_rxi,r5
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_216
+inthdr_216:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #216,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        bsr     __ddr_rx_sci0_txi
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #216,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #__ddr_rx_sci0_txi,r5
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+        .align  8
+        .glb    inthdr_217
+inthdr_217:
+    .if CONFIG_B32 == 0
+    ; This code is indicated except for '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #217,r1                     ; number of interrupt
+        bsr     __kernel_entint
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        bsr     __ddr_rx_sci0_tei
+        bra     __kernel_retint
+    .else
+    ; This code is indicated '32 bits function branches option'
+        pushm   r1-r5
+        mov.l   #217,r1                     ; number of interrupt
+        mov.l   #__kernel_entint,r5
+        jsr     r5
+        mov.l   #__ddr_rx_sci0_tei,r5
+        mov.l   #__ddr_rx_sci0_mng0,r1                      ; set exinf parameter
+        jsr     r5
+        mov.l   #__kernel_retint,r5
+        jmp     r5
+    .endif
+
+
+        .end
+

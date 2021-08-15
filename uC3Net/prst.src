@@ -1,0 +1,52 @@
+;****************************************************************************
+;* Reset Handler                                                            *
+;*                                                                          *
+;*  File name : prst.src                                                 *
+;****************************************************************************
+
+
+;* Section definition
+
+        .section    SI,DATA,ALIGN=4
+        .section    SU,DATA,ALIGN=4
+        .section    VECTTBL,ROMDATA,ALIGN=4
+
+;* IO definition
+
+IOBASE      .equ    00080000h
+
+
+SCKCR       .equ    0020h
+BCKCR       .equ    0030h
+
+;* Reset
+
+        .section    PResetPRG,CODE
+        .glb        _ResetHandler
+_ResetHandler:
+        mvtc    #(topof SI + sizeof SI),isp
+        mvtc    #(topof SU + sizeof SU),usp
+        setpsw  u
+        mvtc    #topof VECTTBL,intb
+
+        bsr     InitTarget
+        bsr     __INITSCT
+        bsr     _main
+
+        .glb    __INITSCT
+        .glb    _main
+
+exit:
+        bra     exit
+
+InitTarget:
+        mov.l   #IOBASE,r5
+        mov.l   #00h<<28|00h<<24|01h<<23|01h<<22|01h<<16|00h<<12|01h<<8|00h,r4 ;PCK,BCK,SDCLK terminal,BCLK_DIV terminal,ICK
+        mov.l   r4,SCKCR[r5]
+_6b:
+        cmp     SCKCR[r5].l,r4
+        bne     _6b
+        mov.b   #01h,BCKCR[r5]            ; BCLKDIV=BCLK/2 
+        rts
+
+        .end
